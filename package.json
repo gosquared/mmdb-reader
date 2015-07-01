@@ -1,0 +1,28 @@
+{
+  "name": "mmdb-reader",
+  "version": "0.0.0",
+  "description": "Read IP data from MaxMind DB files",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/gosquared/mmdb-reader.git"
+  },
+  "keywords": [
+    "geoip",
+    "geoip2",
+    "maxmind",
+    "mmdb"
+  ],
+  "author": "JT <jt@gosquared.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gosquared/mmdb-reader/issues"
+  },
+  "homepage": "https://github.com/gosquared/mmdb-reader",
+  "devDependencies": {
+    "mocha": "^2.2.5"
+  }
+}
