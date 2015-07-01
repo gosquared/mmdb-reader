@@ -388,12 +388,11 @@ Reader.prototype.readRight28 = function(idx){
 };
 
 Reader.prototype.readLeft32 = function(idx){
-  return concat4(this._read(idx++), this._read(idx++), this._read(idx++), this._read(idx++));
+  return this._read32(idx);
 };
 
 Reader.prototype.readRight32 = function(idx){
-  idx += 4;
-  return concat4(this._read(idx++), this._read(idx++), this._read(idx++), this._read(idx++));
+  return this._read32(idx + 4);
 };
 
 Reader.prototype.findIPv4StartPointer = function(){
