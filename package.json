@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/gosquared/mmdb-reader",
   "devDependencies": {
-    "mocha": "^2.2.5"
+    "mocha": "^2.2.5",
+    "eslint": "^0.24.0"
   }
 }

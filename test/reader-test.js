@@ -1,35 +1,8 @@
+/*eslint-env mocha */
+
 var assert = require('assert');
 
 var Reader = require('../');
-
-[24, 28, 32].forEach(function(recordSize){
-
-  describe(recordSize + '-bit record size', function(){
-
-    [4, 6, 'mixed'].forEach(function(ipVersion){
-
-      describe('IP version: ' + ipVersion, function(){
-
-        var f = ipVersion === 'mixed' ? 'mixed' : 'ipv'+ipVersion;
-
-        var fileName = 'test/data/MaxMind-DB-test-'+f+'-'+recordSize+'.mmdb';
-        var reader = new Reader(fileName);
-
-        checkMetadata(reader, ipVersion, recordSize);
-
-        if(ipVersion !== 6){
-          checkIPv4(reader, fileName);
-        }
-
-        if(ipVersion !== 4){
-          checkIPv6(reader, fileName);
-        }
-
-      });
-    });
-
-  });
-});
 
 function checkMetadata(reader, ipVersion, recordSize){
   it('has all the correct metadata', function(){
@@ -48,15 +21,17 @@ function checkMetadata(reader, ipVersion, recordSize){
 }
 
 
-function checkIPv4(reader, fileName){
-  for(var i = 0; i <= 5; i++){
-    var addr = '1.1.1.' + Math.pow(2, i);
+function checkIPv4(reader){
+  [ 1, 2, 4, 8, 16, 32 ].forEach(function(n){
+    var addr = '1.1.1.' + n;
     it('finds expected record for ' + addr, function(){
       var valueAddress = addr;
-      if(reader.metadata.ip_version === 6) valueAddress = '::' + valueAddress;
+      if(reader.metadata.ip_version === 6){
+        valueAddress = '::' + valueAddress;
+      }
       assert.deepEqual(reader.lookup(addr), { ip: valueAddress });
     });
-  }
+  });
 
   var pairs = {
     '1.1.1.3': '1.1.1.2',
@@ -71,7 +46,9 @@ function checkIPv4(reader, fileName){
   Object.keys(pairs).forEach(function(keyAddress){
     var valueAddress = pairs[keyAddress];
 
-    if(reader.metadata.ip_version === 6) valueAddress = '::' + valueAddress;
+    if(reader.metadata.ip_version === 6){
+      valueAddress = '::' + valueAddress;
+    }
 
     it('finds expected record for ' + keyAddress, function(){
       assert.deepEqual(reader.lookup(keyAddress), { ip: valueAddress });
@@ -85,7 +62,7 @@ function checkIPv4(reader, fileName){
   });
 }
 
-function checkIPv6(reader, fileName){
+function checkIPv6(reader){
   var subnets = ['::1:ffff:ffff', '::2:0:0', '::2:0:40', '::2:0:50', '::2:0:58'];
 
   subnets.forEach(function(addr){
@@ -121,6 +98,36 @@ function checkIPv6(reader, fileName){
 }
 
 
+[24, 28, 32].forEach(function(recordSize){
+
+  describe(recordSize + '-bit record size', function(){
+
+    [4, 6, 'mixed'].forEach(function(ipVersion){
+
+      describe('IP version: ' + ipVersion, function(){
+
+        var f = ipVersion === 'mixed' ? 'mixed' : 'ipv' + ipVersion;
+
+        var fileName = 'test/data/MaxMind-DB-test-' + f + '-' + recordSize + '.mmdb';
+        var reader = new Reader(fileName);
+
+        checkMetadata(reader, ipVersion, recordSize);
+
+        if(ipVersion !== 6){
+          checkIPv4(reader);
+        }
+
+        if(ipVersion !== 4){
+          checkIPv6(reader);
+        }
+
+      });
+    });
+
+  });
+});
+
+
 describe('Decoder', function(){
   var reader = new Reader('test/data/MaxMind-DB-test-decoder.mmdb');
 
@@ -152,7 +159,7 @@ describe('Decoder', function(){
       assert.deepEqual(record.map, {
         mapX: {
           arrayX: [7, 8, 9],
-          utf8_stringX: 'hello'
+          utf8_stringX: 'hello' // eslint-disable-line camelcase
         }
       });
     });

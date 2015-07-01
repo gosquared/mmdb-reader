@@ -1,3 +1,9 @@
+function Entry(key, value, lu){
+  this.key = key;
+  this.value = value;
+  this.lu = lu;
+}
+
 function LRUCache(limit){
   this._cache = {};
   this._list = {};
@@ -25,7 +31,9 @@ LRUCache.prototype.bump = function(entry){
 
 LRUCache.prototype.shiftLU = function(lu){
   delete this._list[lu];
-  while(this._lru < this._mru && !this._list[this._lru]) this._lru++;
+  while(this._lru < this._mru && !this._list[this._lru]){
+    this._lru++;
+  }
 };
 
 LRUCache.prototype.set = function(key, value){
@@ -54,11 +62,5 @@ LRUCache.prototype.del = function(entry){
   delete this._cache[entry.key];
   this.shiftLU(entry.lu);
 };
-
-function Entry(key, value, lu){
-  this.key = key;
-  this.value = value;
-  this.lu = lu;
-}
 
 module.exports = LRUCache;

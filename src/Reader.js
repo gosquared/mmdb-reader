@@ -1,18 +1,18 @@
 var fs = require('fs');
 var IpDecoder = require('./IpDecoder');
-var LRU = require('./LRUCache')
+var LRU = require('./LRUCache');
 
 
 function concat2(a, b){
-  return (a<<8) | b;
+  return (a << 8) | b;
 }
 
 function concat3(a, b, c){
-  return (a<<16) | (b<<8) | c;
+  return (a << 16) | (b << 8) | c;
 }
 
 function concat4(a, b, c, d){
-  return (a<<24) | (b<<16) | (c<<8) | d;
+  return (a << 24) | (b << 16) | (c << 8) | d;
 }
 
 
@@ -44,7 +44,9 @@ function Reader(buf){
 
 Reader.open = function(file, cb){
   fs.readFile(file, function(err, buf){
-    if(err) return cb(err);
+    if(err){
+      return cb(err);
+    }
     cb(err, new Reader(buf));
   });
 };
@@ -58,11 +60,11 @@ Reader.prototype._read = function(ptr){
 
 Reader.prototype._readBuffer = function(ptr, len){
   return this._buf.slice(ptr, ptr + len);
-}
+};
 
 Reader.prototype._read32 = function(ptr){
   return this._buf.readUInt32BE(ptr);
-}
+};
 
 Reader.prototype._readUTF8 = function(ptr, len){
   return this._buf.toString('utf8', ptr, ptr + len);
@@ -74,14 +76,16 @@ Reader.prototype._readDouble = function(ptr){
 
 Reader.prototype._readFloat = function(ptr){
   return this._buf.readFloatBE(ptr);
-}
+};
 
 Reader.prototype.findMetaPosition = function(){
   var metaMarker = 'abcdef4d61784d696e642e636f6d';
   var buf = this._buf;
 
   for(var metaPosition = buf.length; ; metaPosition--) {
-    if(buf.toString('hex', metaPosition - metaMarker.length / 2, metaPosition) === metaMarker) break;
+    if(buf.toString('hex', metaPosition - metaMarker.length / 2, metaPosition) === metaMarker){
+      break;
+    }
   }
 
   return metaPosition;
@@ -119,13 +123,15 @@ Reader.prototype.readData = function(ptr){
   case 15: // float
     return this.readFloat(control);
   default:
-    throw "UNIMPLEMENTED " + control.type;
+    throw new Error('Unknown type identifier: ' + control.type);
   }
 };
 
 Reader.prototype.cachedRead = function(ptr){
   var cached = this._pointerCache.get(ptr);
-  if(cached) return cached;
+  if(cached){
+    return cached;
+  }
   var d = this.readData(ptr);
   this._pointerCache.set(ptr, d);
   return d;
@@ -210,7 +216,7 @@ Reader.prototype.readBytes = function(control){
   ptr += length;
 
   return { value: val, ptr: ptr };
-}
+};
 
 Reader.prototype.readUInt16 = function(control){
   var size = control.size;
@@ -279,7 +285,7 @@ Reader.prototype.readInt32 = function(control){
   ptr += size;
 
   return { value: val, ptr: ptr };
-}
+};
 
 Reader.prototype.readUInt64 = function(control){
   var size = control.size;
@@ -306,7 +312,7 @@ Reader.prototype.readUInt128 = function(control){
   var ptr = control.ptr;
 
   for(var i = 0; i < size; i++){
-    cpts[0|i/32] |= this._read(ptr + size - (i % 32) - 1) << (i * 8);
+    cpts[0 | i / 32] |= this._read(ptr + size - (i % 32) - 1) << (i * 8);
   }
 
   ptr += size;
@@ -340,7 +346,7 @@ Reader.prototype.readFloat = function(control){
   ptr += 4;
 
   return { value: val, ptr: ptr };
-}
+};
 
 Reader.prototype.setRecordSize = function(size){
   switch(size){
@@ -370,7 +376,7 @@ Reader.prototype.readRight24 = function(idx){
 
 Reader.prototype.readLeft28 = function(idx){
   return concat4(
-    this._read(idx+3) >> 4,
+    this._read(idx + 3) >> 4,
     this._read(idx++),
     this._read(idx++),
     this._read(idx++)

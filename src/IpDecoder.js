@@ -37,7 +37,7 @@ IpDecoder.prototype.set6 = function(ip){
     this.buf[j++] = x & 0xff;
   }
   this.ipVersion = 6;
-}
+};
 
 IpDecoder.prototype.bitAt = function(idx){
   var bufIdx = idx >> 3;
