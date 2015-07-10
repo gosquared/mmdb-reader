@@ -5,14 +5,18 @@ function Entry(key, value, lu){
 }
 
 function LRUCache(limit){
+  this._limit = limit;
+  this.reset();
+}
+
+LRUCache.prototype.reset = function(){
   this._cache = {};
   this._list = {};
   this._lru = 0;
   this._mru = 0;
   this._waiting = 0;
   this._count = 0;
-  this._limit = limit;
-}
+};
 
 LRUCache.prototype.get = function(key){
   var entry = this._cache[key];

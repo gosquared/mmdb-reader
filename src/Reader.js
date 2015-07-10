@@ -27,17 +27,7 @@ function Reader(buf){
   }
 
   this._buf = buf;
-
-  var metaPosition = this.findMetaPosition();
-  this.metadata = this.readData(metaPosition).value;
-
-  this.setRecordSize(this.metadata.record_size);
-  this.recordSize = this.metadata.record_size;
-  this.nodeSize = this.recordSize / 4;
-  this.numNodes = this.metadata.node_count;
-  this.dataStart = this.numNodes * this.nodeSize + 16;
-  this.ip = new IpDecoder();
-  this.findIPv4StartPointer();
+  this.setup();
 
   this._pointerCache = new LRU(5000); // 5000 seems to be roughly the sweet spot between mem vs hit-rate
 }
@@ -58,6 +48,41 @@ Reader.prototype.destroy = function(){
   this._pointerCache = null;
   this.metadata = null;
   this.ip = null;
+};
+
+Reader.prototype.setup = function(){
+  var metaPosition = this.findMetaPosition();
+  this.metadata = this.readData(metaPosition).value;
+
+  this.setRecordSize(this.metadata.record_size);
+  this.recordSize = this.metadata.record_size;
+  this.nodeSize = this.recordSize / 4;
+  this.numNodes = this.metadata.node_count;
+  this.dataStart = this.numNodes * this.nodeSize + 16;
+  this.ip = new IpDecoder();
+  this.findIPv4StartPointer();
+};
+
+Reader.prototype.reload = function(file, cb){
+  var self = this;
+  if(typeof file === 'string'){
+    fs.readFile(file, function(err, buf){
+      if(err){
+        if(cb) cb(err);
+        return;
+      }
+      self.reload(buf);
+    });
+    return;
+  }
+
+  this._buf = file;
+  this._pointerCache.reset();
+  this.setup();
+};
+
+Reader.prototype.reloadSync = function(file){
+  this.reload(fs.readFileSync(file));
 };
 
 Reader.prototype._read = function(ptr){
