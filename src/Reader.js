@@ -43,13 +43,6 @@ Reader.open = function(file, cb){
 
 Reader.openSync = Reader;
 
-Reader.prototype.destroy = function(){
-  this._buf = null;
-  this._pointerCache = null;
-  this.metadata = null;
-  this.ip = null;
-};
-
 Reader.prototype.setup = function(){
   var metaPosition = this.findMetaPosition();
   this.metadata = this.readData(metaPosition).value;

@@ -23,13 +23,13 @@ console.log('Initial RSS: %s', start.rss);
 var num = 5000;
 
 // TEST DESTROY
-console.log('\nTesting destroying...');
+console.log('\nTesting cleanup...');
 
-// Do a few loops of loading lots of stuff into mem and getting rid of it
+// Do a few loops of loading lots of stuff into mem and chucking it away
 
 for(var j = 0; j < 10; j += 1){
 
-  readers.forEach(function(r){ r.destroy(); });
+  readers = [];
 
   gc();
 
