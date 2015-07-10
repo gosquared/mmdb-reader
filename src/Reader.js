@@ -37,7 +37,14 @@ Reader.open = function(file, cb){
     if(err){
       return cb(err);
     }
-    cb(err, new Reader(buf));
+    var r;
+    try{
+      r = new Reader(buf);
+    }catch(e){
+      cb(e);
+      return;
+    }
+    cb(err, r);
   });
 };
 
@@ -64,7 +71,12 @@ Reader.prototype.reload = function(file, cb){
         if(cb) cb(err);
         return;
       }
-      self.reload(buf);
+      try{
+        self.reload(buf);
+      }catch(e){
+        cb(e);
+        return;
+      }
       cb(null);
     });
     return;
@@ -107,10 +119,14 @@ Reader.prototype.findMetaPosition = function(){
   var metaMarker = 'abcdef4d61784d696e642e636f6d';
   var buf = this._buf;
 
-  for(var metaPosition = buf.length; ; metaPosition--) {
+  for(var metaPosition = buf.length; metaPosition; metaPosition--) {
     if(buf.toString('hex', metaPosition - metaMarker.length / 2, metaPosition) === metaMarker){
       break;
     }
+  }
+
+  if(metaPosition === 0){
+    throw new Error('Bad DB');
   }
 
   return metaPosition;
@@ -387,6 +403,8 @@ Reader.prototype.setRecordSize = function(size){
     this.readLeft = this.readLeft32;
     this.readRight = this.readRight32;
     break;
+  default:
+    throw new Error('Unknown record size');
   }
 };
 
