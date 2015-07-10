@@ -42,7 +42,8 @@ for(var j = 0; j < 10; j += 1){
   console.log('Pass %s RSS: %s', j, mem.rss);
 
   // We've loaded ${num} copies of the file into mem, they should be there
-  assert(mem.rss - start.rss > num * fileSize);
+  // 0.75 in case initial RSS was a bit high.
+  assert(mem.rss - start.rss > num * fileSize * 0.75);
 
   // Dispose + gc + reload shouldn't increase the mem too much
   assert(mem.rss - start.rss < num * fileSize * 1.5);
@@ -75,7 +76,8 @@ for(var j = 0; j < 10; j += 1){
   console.log('Pass %s RSS: %s', j, mem.rss);
 
   // We've loaded ${num} copies of the file into mem, they should be there
-  assert(mem.rss - start.rss > num * fileSize);
+  // 0.75 in case initial RSS was a bit high.
+  assert(mem.rss - start.rss > num * fileSize * 0.75);
 
   // Dispose + gc + reload shouldn't increase the mem too much
   assert(mem.rss - start.rss < num * fileSize * 1.5);
