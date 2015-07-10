@@ -72,6 +72,7 @@ Reader.prototype.reload = function(file, cb){
         return;
       }
       self.reload(buf);
+      cb(null);
     });
     return;
   }
