@@ -2,19 +2,83 @@
 
 var assert = require('assert');
 
+var fs = require('fs');
+
 var Reader = require('../');
 
+describe('Constructor', function(){
+
+  it('allows new', function(){
+    var r = new Reader('test/data/MaxMind-DB-test-decoder.mmdb');
+    assert(r);
+    assert(r instanceof Reader);
+    assert(r._buf);
+  });
+
+  it('allows not-new', function(){
+    var r = Reader('test/data/MaxMind-DB-test-decoder.mmdb');
+    assert(r);
+    assert(r instanceof Reader);
+    assert(r._buf);
+  });
+
+  it('allows new with a buffer', function(){
+    var r = new Reader(fs.readFileSync('test/data/MaxMind-DB-test-decoder.mmdb'));
+    assert(r);
+    assert(r instanceof Reader);
+    assert(r._buf);
+  });
+
+  it('allows not-new with a buffer', function(){
+    var r = Reader(fs.readFileSync('test/data/MaxMind-DB-test-decoder.mmdb'));
+    assert(r);
+    assert(r instanceof Reader);
+    assert(r._buf);
+  });
+
+});
+
+describe('Opening', function(){
+
+  describe('#openSync()', function(){
+    it('opens with a string', function(){
+      var r = Reader.openSync('test/data/MaxMind-DB-test-decoder.mmdb');
+      assert(r);
+      assert(r instanceof Reader);
+      assert(r._buf);
+    });
+
+    it('opens with a buffer', function(){
+      var r = Reader.openSync(fs.readFileSync('test/data/MaxMind-DB-test-decoder.mmdb'));
+      assert(r);
+      assert(r instanceof Reader);
+      assert(r._buf);
+    });
+  });
+
+  describe('#open()', function(){
+    it('opens with a string', function(done){
+      Reader.open('test/data/MaxMind-DB-test-decoder.mmdb', function(err, r){
+        assert(r);
+        assert(r instanceof Reader);
+        assert(r._buf);
+        done();
+      });
+    });
+  });
+
+});
 
 describe('Bad DBs', function(){
 
   it('doesn\'t get confused by a bad db file', function(){
     assert.throws(function(){
-      new Reader('test/data/empty.mmdb');
+      Reader('test/data/empty.mmdb');
     });
   });
 
   it('doesn\'t get confused by a bad db file (async)', function(done){
-    Reader.open('test/data/empty.mmdb', function(err, reader){
+    Reader.open('test/data/empty.mmdb', function(err){
       assert(err);
       done();
     });
@@ -108,6 +172,25 @@ describe('Reload', function(){
     assert.strictEqual(reader.lookup('1.1.1.0').boolean, true);
 
     reader.reload('non/existent/file', function(err){
+      assert(err);
+      assert.strictEqual(reader.lookup('1.1.1.0').boolean, true);
+      done();
+    });
+  });
+
+  it('throws up if reloading without a file (sync)', function(){
+    var reader = new Reader(fs.readFileSync('test/data/MaxMind-DB-test-decoder.mmdb'));
+
+    assert.throws(function(){
+      reader.reloadSync();
+      assert.strictEqual(reader.lookup('1.1.1.0').boolean, true);
+    });
+  });
+
+  it('throws up if reloading without a file (async)', function(done){
+    var reader = new Reader(fs.readFileSync('test/data/MaxMind-DB-test-decoder.mmdb'));
+
+    reader.reload(function(err){
       assert(err);
       assert.strictEqual(reader.lookup('1.1.1.0').boolean, true);
       done();

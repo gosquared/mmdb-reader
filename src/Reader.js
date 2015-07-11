@@ -43,8 +43,7 @@ Reader.open = function(file, cb){
     try{
       r = new Reader(buf, file);
     }catch(e){
-      cb(e);
-      return;
+      return cb(e);
     }
     cb(err, r);
   });
