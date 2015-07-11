@@ -71,6 +71,9 @@ Reader.prototype.reload = function(file, cb){
     cb = file;
     file = this.filePath;
   }
+  if(!cb){
+    cb = function(){};
+  }
   if(!file){
     setImmediate(function(){
       cb(new Error('No file to load'));
@@ -80,14 +83,12 @@ Reader.prototype.reload = function(file, cb){
   if(typeof file === 'string'){
     fs.readFile(file, function(err, buf){
       if(err){
-        if(cb) cb(err);
-        return;
+        return cb(err);
       }
       try{
         self.reload(buf);
       }catch(e){
-        cb(e);
-        return;
+        return cb(e);
       }
       cb(null);
     });
