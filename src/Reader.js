@@ -16,17 +16,19 @@ function concat4(a, b, c, d){
 }
 
 
-function Reader(buf){
+function Reader(buf, filePath){
 
   if(!(this instanceof Reader)){
     return new Reader(buf);
   }
 
   if(typeof buf === 'string'){
+    filePath = buf;
     buf = fs.readFileSync(buf);
   }
 
   this._buf = buf;
+  this.filePath = filePath;
   this.setup();
 
   this._pointerCache = new LRU(5000); // 5000 seems to be roughly the sweet spot between mem vs hit-rate
@@ -39,7 +41,7 @@ Reader.open = function(file, cb){
     }
     var r;
     try{
-      r = new Reader(buf);
+      r = new Reader(buf, file);
     }catch(e){
       cb(e);
       return;
@@ -65,6 +67,16 @@ Reader.prototype.setup = function(){
 
 Reader.prototype.reload = function(file, cb){
   var self = this;
+  if(typeof file === 'function' || typeof file === 'undefined'){
+    cb = file;
+    file = this.filePath;
+  }
+  if(!file){
+    setImmediate(function(){
+      cb(new Error('No file to load'));
+    });
+    return;
+  }
   if(typeof file === 'string'){
     fs.readFile(file, function(err, buf){
       if(err){
@@ -88,6 +100,12 @@ Reader.prototype.reload = function(file, cb){
 };
 
 Reader.prototype.reloadSync = function(file){
+  if(!file){
+    file = this.filePath;
+  }
+  if(!file){
+    throw new Error('No file to load');
+  }
   this.reload(fs.readFileSync(file));
 };
 

@@ -68,6 +68,29 @@ describe('Reload', function(){
     });
   });
 
+  it('can reload same file (sync)', function(){
+    var reader = new Reader('test/data/MaxMind-DB-test-decoder.mmdb');
+
+    assert.strictEqual(reader.lookup('1.1.1.0').boolean, true);
+
+    reader.reloadSync();
+
+    assert.strictEqual(reader.lookup('1.1.1.0').boolean, true);
+  });
+
+
+  it('can reload same file (async)', function(done){
+    var reader = new Reader('test/data/MaxMind-DB-test-decoder.mmdb');
+
+    assert.strictEqual(reader.lookup('1.1.1.0').boolean, true);
+
+    reader.reload(function(err){
+      assert(!err);
+      assert.strictEqual(reader.lookup('1.1.1.0').boolean, true);
+      done();
+    });
+  });
+
 
   it('can reload with a different file', function(){
     var reader = new Reader('test/data/MaxMind-DB-test-ipv4-24.mmdb');
