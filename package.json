@@ -1,6 +1,6 @@
 {
   "name": "mmdb-reader",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Read IP data from MaxMind DB files",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
     "mmdb"
   ],
   "author": "JT <jt@gosquared.com>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/gosquared/mmdb-reader/issues"
   },
