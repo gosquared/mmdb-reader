@@ -154,14 +154,11 @@ describe('Bad data', function(){
       });
     });
 
-    // I can't figure out why this doesn't throw. I _think_
-    // it's supposed to test whether a pointer can point to
-    // another pointer. Problem is, we don't throw on that.
-    // it('throws with bad data section', function(){
-    //   assert.throws(function(){
-    //     reader.lookup('1.1.1.16');
-    //   });
-    // });
+    it('throws with bad data section', function(){
+      assert.throws(function(){
+        reader.lookup('1.1.1.16');
+      });
+    });
 
   });
 
