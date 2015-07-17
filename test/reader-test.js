@@ -79,7 +79,10 @@ function checkIPv6(reader){
     '::2:0:49': '::2:0:40',
     '::2:0:52': '::2:0:50',
     '::2:0:57': '::2:0:50',
-    '::2:0:59': '::2:0:58'
+    '::2:0:59': '::2:0:58',
+
+    // ADDED in addition to maxmind standard ones for checking full IP
+    '0:0:0:0:0:2:0:59': '::2:0:58'
   };
 
   Object.keys(pairs).forEach(function(keyAddress){
@@ -127,6 +130,52 @@ function checkIPv6(reader){
   });
 });
 
+describe('Without IPv4 Search Tree', function(){
+  var reader = new Reader('test/data/MaxMind-DB-no-ipv4-search-tree.mmdb');
+
+  it('finds expected record for 1.1.1.1', function(){
+    assert.strictEqual(reader.lookup('1.1.1.1'), '::0/64');
+  });
+
+  it('finds expected record for 192.1.1.1', function(){
+    assert.strictEqual(reader.lookup('192.1.1.1'), '::0/64');
+  });
+
+});
+
+describe('Bad data', function(){
+
+  describe('Bad pointers', function(){
+    var reader = new Reader('test/data/MaxMind-DB-test-broken-pointers-24.mmdb');
+
+    it('throws with bad search tree', function(){
+      assert.throws(function(){
+        reader.lookup('1.1.1.32');
+      });
+    });
+
+    // I can't figure out why this doesn't throw. I _think_
+    // it's supposed to test whether a pointer can point to
+    // another pointer. Problem is, we don't throw on that.
+    // it('throws with bad data section', function(){
+    //   assert.throws(function(){
+    //     reader.lookup('1.1.1.16');
+    //   });
+    // });
+
+  });
+
+  describe('Broken doubles', function(){
+    var reader = new Reader('test/data/GeoIP2-City-Test-Broken-Double-Format.mmdb');
+
+    it('throws with bad double data', function(){
+      assert.throws(function(){
+        reader.lookup('2001:220::');
+      });
+    });
+  });
+
+});
 
 describe('Decoder', function(){
   var reader = new Reader('test/data/MaxMind-DB-test-decoder.mmdb');

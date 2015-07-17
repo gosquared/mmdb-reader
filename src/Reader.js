@@ -27,11 +27,11 @@ function Reader(buf, filePath){
     buf = fs.readFileSync(buf);
   }
 
+  this._pointerCache = new LRU(5000); // 5000 seems to be roughly the sweet spot between mem vs hit-rate
+
   this._buf = buf;
   this.filePath = filePath;
   this.setup();
-
-  this._pointerCache = new LRU(5000); // 5000 seems to be roughly the sweet spot between mem vs hit-rate
 }
 
 Reader.open = function(file, cb){
@@ -53,6 +53,7 @@ Reader.openSync = Reader;
 
 Reader.prototype.setup = function(){
   var metaPosition = this.findMetaPosition();
+  this.dataStart = metaPosition;
   this.metadata = this.readData(metaPosition).value;
 
   this.setRecordSize(this.metadata.record_size);
@@ -468,6 +469,18 @@ Reader.prototype.findIPv4StartPointer = function(){
   if(this.metadata.ip_version === 6){
     for(var i = 0; i < 96; i++){
       var record = this.readLeft(ptr);
+
+      if(record === this.numNodes){
+        this.ipv4StartPointer = null;
+        return;
+      }
+
+      if(record > this.numNodes){
+        this.ipv4StartPointer = -1;
+        this.ipv4Data = this.cachedRead((record - this.numNodes) + this.dataStart - 16).value;
+        return;
+      }
+
       ptr = record * this.recordSize / 4;
     }
   }
@@ -483,6 +496,12 @@ Reader.prototype.lookup = function(ip){
   if(this.ip.ipVersion === 4){
     numBits = 32;
     ptr = this.ipv4StartPointer;
+    if(ptr === null){
+      return null;
+    }
+    if(ptr === -1){
+      return this.ipv4Data;
+    }
   }
 
   for(var i = 0; i < numBits; i++){

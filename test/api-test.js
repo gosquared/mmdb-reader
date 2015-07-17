@@ -71,6 +71,19 @@ describe('Opening', function(){
 
 describe('Bad DBs', function(){
 
+  it('throws up when loading a nonexistent file (sync)', function(){
+    assert.throws(function(){
+      Reader('does/not/exist');
+    });
+  });
+
+  it('throws up when loading a nonexistent file (async)', function(done){
+    Reader.open('does/not/exist', function(err){
+      assert(err);
+      done();
+    });
+  });
+
   it('doesn\'t get confused by a bad db file', function(){
     assert.throws(function(){
       Reader('test/data/empty.mmdb');
