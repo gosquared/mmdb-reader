@@ -48,7 +48,7 @@ LRUCache.prototype.set = function(key, value){
   this._list[entry.lu] = this._cache[key] = entry;
 
   if(this._count > this._limit){
-    if(this._waiting++ > this._limit / 10){
+    if(++this._waiting > this._limit / 10){
       this.trim();
     }
   }

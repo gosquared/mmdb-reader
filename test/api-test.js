@@ -145,6 +145,14 @@ describe('Reload', function(){
     });
   });
 
+  it('can reload without a callback', function(){
+    var reader = new Reader('test/data/MaxMind-DB-test-decoder.mmdb');
+
+    assert.strictEqual(reader.lookup('1.1.1.0').boolean, true);
+
+    reader.reload();
+  });
+
   it('can reload same file (sync)', function(){
     var reader = new Reader('test/data/MaxMind-DB-test-decoder.mmdb');
 
