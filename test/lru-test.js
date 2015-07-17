@@ -40,8 +40,8 @@ describe('LRU', function(){
       lru.set(i, i);
     }
 
-    for(var i = 0; i < 110; i += 1){
-      assert.strictEqual(lru.get(i), i);
+    for(var j = 0; j < 110; j += 1){
+      assert.strictEqual(lru.get(j), j);
     }
   });
 
@@ -63,8 +63,8 @@ describe('LRU', function(){
     assert.strictEqual(lru.get(9), undefined);
     assert.strictEqual(lru.get(10), undefined);
 
-    for(var i = 11; i < 111; i += 1){
-      assert.strictEqual(lru.get(i), i);
+    for(var j = 11; j < 111; j += 1){
+      assert.strictEqual(lru.get(j), j);
     }
   });
 

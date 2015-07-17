@@ -1,7 +1,9 @@
 /*eslint-env mocha */
 
+/* global gc */
+
 if(typeof gc === 'undefined'){
-  throw new Error("Memory test should be run with --expose-gc");
+  throw new Error('Memory test should be run with --expose-gc');
 }
 
 console.log('Running memory test...');
@@ -27,17 +29,21 @@ console.log('\nTesting cleanup...');
 
 // Do a few loops of loading lots of stuff into mem and chucking it away
 
-for(var j = 0; j < 10; j += 1){
+var i, j, mem;
+
+for(j = 0; j < 10; j += 1){
 
   readers = [];
 
   gc();
 
-  for(var i = 0; i < num; i++) readers.push(new Reader(file));
+  for(i = 0; i < num; i++){
+    readers.push(new Reader(file));
+  }
 
   gc();
 
-  var mem = process.memoryUsage();
+  mem = process.memoryUsage();
 
   console.log('Pass %s RSS: %s', j, mem.rss);
 
@@ -59,10 +65,12 @@ gc();
 // TEST RELOAD
 console.log('\nTesting reloading...');
 
-for(var i = 0; i < num; i++) readers.push(new Reader(file));
+for(i = 0; i < num; i++){
+  readers.push(new Reader(file));
+}
 
 
-for(var j = 0; j < 10; j += 1){
+for(j = 0; j < 10; j += 1){
 
   readers.forEach(function(r){
     r.reloadSync(file);
@@ -71,7 +79,7 @@ for(var j = 0; j < 10; j += 1){
 
   gc();
 
-  var mem = process.memoryUsage();
+  mem = process.memoryUsage();
 
   console.log('Pass %s RSS: %s', j, mem.rss);
 

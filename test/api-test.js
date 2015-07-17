@@ -16,7 +16,7 @@ describe('Constructor', function(){
   });
 
   it('allows not-new', function(){
-    var r = Reader('test/data/MaxMind-DB-test-decoder.mmdb');
+    var r = Reader('test/data/MaxMind-DB-test-decoder.mmdb'); // eslint-disable-line new-cap
     assert(r);
     assert(r instanceof Reader);
     assert(r._buf);
@@ -30,7 +30,7 @@ describe('Constructor', function(){
   });
 
   it('allows not-new with a buffer', function(){
-    var r = Reader(fs.readFileSync('test/data/MaxMind-DB-test-decoder.mmdb'));
+    var r = Reader(fs.readFileSync('test/data/MaxMind-DB-test-decoder.mmdb')); // eslint-disable-line new-cap
     assert(r);
     assert(r instanceof Reader);
     assert(r._buf);
@@ -59,6 +59,7 @@ describe('Opening', function(){
   describe('#open()', function(){
     it('opens with a string', function(done){
       Reader.open('test/data/MaxMind-DB-test-decoder.mmdb', function(err, r){
+        assert(!err);
         assert(r);
         assert(r instanceof Reader);
         assert(r._buf);
@@ -73,7 +74,7 @@ describe('Bad DBs', function(){
 
   it('throws up when loading a nonexistent file (sync)', function(){
     assert.throws(function(){
-      Reader('does/not/exist');
+      Reader('does/not/exist'); // eslint-disable-line new-cap
     });
   });
 
@@ -86,7 +87,7 @@ describe('Bad DBs', function(){
 
   it('doesn\'t get confused by a bad db file', function(){
     assert.throws(function(){
-      Reader('test/data/empty.mmdb');
+      Reader('test/data/empty.mmdb'); // eslint-disable-line new-cap
     });
   });
 
