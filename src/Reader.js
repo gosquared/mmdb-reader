@@ -243,7 +243,8 @@ Reader.prototype.readPointer = function(control){
     addr = concat4(baseSize, this._read(ptr++), this._read(ptr++), this._read(ptr++)) + 526336;
   }
   if(ptrSize === 3){
-    addr = concat4(this._read(ptr++), this._read(ptr++), this._read(ptr++), this._read(ptr++));
+    addr = this._read32(ptr);
+    ptr += 4;
   }
 
   var d = this.cachedRead(addr + this.dataStart);
