@@ -278,23 +278,23 @@ describe('Decoder', function(){
     });
 
     it('decodes signed 32-bit ints', function(){
-      assert.strictEqual(0, record.int32);
+      assert.strictEqual(record.int32, 0);
     });
 
     it('decodes unsigned 16-bit ints', function(){
-      assert.strictEqual(0, record.uint16);
+      assert.strictEqual(record.uint16, 0);
     });
 
     it('decodes unsigned 32-bit ints', function(){
-      assert.strictEqual(0, record.uint32);
+      assert.strictEqual(record.uint32, 0);
     });
 
     it('decodes unsigned 64-bit ints', function(){
-      assert.strictEqual('0', record.uint64);
+      assert.strictEqual(record.uint64, '0');
     });
 
     it('decodes unsigned 128-bit ints', function(){
-      assert.strictEqual('0', record.uint128);
+      assert.strictEqual(record.uint128, '0');
     });
   });
 });
