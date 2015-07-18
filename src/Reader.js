@@ -1,6 +1,7 @@
 var fs = require('fs');
 var IpDecoder = require('./IpDecoder');
 var LRU = require('./LRUCache');
+var bigInteger = require('big-integer');
 
 
 // Few helper functions for combining bytes into numbers.
@@ -469,40 +470,36 @@ Reader.prototype.readInt32 = function(control){
   return { value: val, ptr: ptr };
 };
 
-// Read a 64-bit int. Currently returns high and low words
-// NB: this may change at some point
+// Read a 64-bit int. Uses big-integer and returns a string value
 Reader.prototype.readUInt64 = function(control){
   var size = control.size;
-  var hi = 0;
-  var lo = 0;
   var ptr = control.ptr;
 
+  var num = bigInteger(0);
+
   for(var i = 0; i < size; i++){
-    if(i < 4){
-      lo |= this._read(ptr + size - i - 1) << (i * 8);
-    }else{
-      hi |= this._read(ptr + size - i - 1) << (i * 8 - 32);
-    }
+    num = num.or(bigInteger(this._read(ptr + size - i - 1)).shiftLeft(i * 8));
   }
 
   ptr += size;
 
-  return { value: { hi: hi, lo: lo, t: 64 }, ptr: ptr };
+  return { value: num.toString(), ptr: ptr };
 };
 
-// Read a 128-bit int. Currently returns an array of words. May change
+// Read a 128-bit int. Exactly the same as uint64
 Reader.prototype.readUInt128 = function(control){
   var size = control.size;
-  var cpts = [ 0, 0, 0, 0 ];
   var ptr = control.ptr;
 
+  var num = bigInteger(0);
+
   for(var i = 0; i < size; i++){
-    cpts[0 | i / 32] |= this._read(ptr + size - (i % 32) - 1) << (i * 8);
+    num = num.or(bigInteger(this._read(ptr + size - i - 1)).shiftLeft(i * 8));
   }
 
   ptr += size;
 
-  return { value: { c: cpts, t: 128 }, ptr: ptr };
+  return { value: num.toString(), ptr: ptr };
 };
 
 // Read an array of objects

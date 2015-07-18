@@ -25,5 +25,8 @@
   "devDependencies": {
     "mocha": "^2.2.5",
     "eslint": "^0.24.0"
+  },
+  "dependencies": {
+    "big-integer": "^1.5.4"
   }
 }
