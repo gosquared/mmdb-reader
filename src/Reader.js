@@ -478,7 +478,7 @@ Reader.prototype.readUInt64 = function(control){
   var num = bigInteger(0);
 
   for(var i = 0; i < size; i++){
-    num = num.or(bigInteger(this._read(ptr + size - i - 1)).shiftLeft(i * 8));
+    num = num.add(bigInteger(this._read(ptr + size - i - 1)).shiftLeft(i * 8));
   }
 
   ptr += size;
@@ -494,7 +494,7 @@ Reader.prototype.readUInt128 = function(control){
   var num = bigInteger(0);
 
   for(var i = 0; i < size; i++){
-    num = num.or(bigInteger(this._read(ptr + size - i - 1)).shiftLeft(i * 8));
+    num = num.add(bigInteger(this._read(ptr + size - i - 1)).shiftLeft(i * 8));
   }
 
   ptr += size;
