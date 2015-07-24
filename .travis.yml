@@ -1,5 +1,16 @@
 language: node_js
 node_js:
- - "0.12"
- - "0.10"
- - "iojs"
+- '0.12'
+- '0.10'
+- iojs
+deploy:
+  provider: npm
+  email: jt@gosquared.com
+  api_key:
+    secure: BIy0LHj3zB9WqAcTFBbxHxMPKFU/XVoQWvF5krNCd6QStC50Ht9W0cM6VlLnBh7iJkh8Pcc48gXKfcErIuEJJ4bYYuASNK0r0AA2YMbTovg3q9fTrFmcBtc7RmJW/ghB0GsURN3PW1VlMBuoGxkPwcbFBCFObWKlqio+6n/bH2Q8mvcVmM+QoAepQesGi0ZyvxchdoG+NpH27WmCQkzAZzvGACGXedU35p4bfXlj58yxLbYkbfkWo9Xr1BGjE31zlT4HPFNykbZg5Eo/aVi8kopWNWgek5Hru3mph68CuSlEi3Jh7mkBCeUW3eO6kIa3P/TB71v6AHiebt8LS46xcLf81nv+w4/5YlF9zaLTiDIcuZRSlQEaz0oONpPP0RruNzYbHHsQA4MaKMbJi+hHllDfcQ64kTsbRZqczZ0FUKckn9jRYc7An0Q8RJVZg3WarU+r29xOKF3TrAXO2pMv2EZqRphGzN6dXX6NGwAHh7x6NvOQh+LfD4xBYPAj51j/hv81BUczRAVQAV7LJ/XsNxU+GxvvLuMn1LXzF3OyBM8u3Sb0zSBCu5ZTh6qKQc0rAo2/j3m1HDnveF1YNDpYl90SDyyTF2Smnu5gv7tVLDVIAnZHA42EttfW1EYLrXAjP0fBWfjn/5Ewrgt0SyyZA1OrCif6UTDf6r07oSywk7U=
+  on:
+    tags: true
+    branch: master
+notifications:
+  slack:
+    secure: EYYu/Yq77M0chS5m4BVUn7w4ZjovE1pACGXtHkkXMUzFlxD0OjwNMeF+b1CPKgMgVFYA4yCTMthF3dcEytGFedEM79ZdxqP84sfI8oodRkSsiafx/WIdbpjivqfADKeM4DYkVxq2bv+5Jw4TXNGozxYFL2gtsa4AcJ+NkqhMtmB0DFMN8mgccaaYBKH8TsihtwOlgpetD7Jfi/SwShNnhYvYXvW9xL96auX/jsiE7247yjQrdkgDBK6wj6QeLJLou+NE/aaolYzQ/j9FAfjx6F3StD6cLRHWzP4OxtFKgMl6gv4dNB77I2fEzD9RlrHPLnHqfj2qC4IGjeBsE4qbhXpvUYPMtJV9RLNZce2NaTmb3T1oUsVvsjv/6ThL137CnlxgdAPi07ABK/YRcdIvoN1PuTjBvtqhY19+q2bfq/+zLA5LVK4jFRmfPxwGXAODB3huaNfH/J4s+oDaiEMBzC9KDnuOS99P7tqDHyiBbTgz0/2eEzk+05kBSpmcIUTNXUumHqjh/7C0tZ4Bz9RC1lwgERUBcEpxi0SQbmJQ17uwm62wXuAVsmxm8E/AfF/s6s1z6yBGyE6krntqonFwqPJlnkjAt9te8kosEVOg372OhMAapkOy5Uy4RlgJ2W+uNPRqpG28H8PmgiW4HZ3TcUZe3Htn/sgOrBMnfJKadmI=
