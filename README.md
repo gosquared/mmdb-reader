@@ -1,5 +1,11 @@
 # mmdb-reader
 
+[![Travis](https://api.travis-ci.org/gosquared/mmdb-reader.svg)](https://travis-ci.org/gosquared/mmdb-reader)
+[![Dependencies](https://david-dm.org/gosquared/mmdb-reader.svg)](https://david-dm.org/gosquared/mmdb-reader)
+[![Join the chat at https://gitter.im/gosquared/mmdb-reader](https://img.shields.io/badge/gitter-join%20chat-blue.svg)](https://gitter.im/gosquared/mmdb-reader)
+
+[![NPM](https://nodei.co/npm/mmdb-reader.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/mmdb-reader)
+
 Pure-JS reader for MaxMind DB (.mmdb) files, for looking up data indexed by IP address.
 
 Inspired by [node-maxmind-db](https://github.com/PaddeK/node-maxmind-db), but faster.
