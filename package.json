@@ -1,6 +1,6 @@
 {
   "name": "mmdb-reader",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Read IP data from MaxMind DB files",
   "main": "index.js",
   "scripts": {
