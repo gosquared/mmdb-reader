@@ -1,7 +1,7 @@
-var fs = require('fs');
-var IpDecoder = require('./IpDecoder');
-var LRU = require('./LRUCache');
-var bigInteger = require('big-integer');
+var fs = require('fs'),
+  IpDecoder = require('./IpDecoder'),
+  LRU = require('./LRUCache'),
+  bigInteger = require('big-integer');
 
 
 // Few helper functions for combining bytes into numbers.
@@ -59,6 +59,8 @@ Reader.open = function(file, cb){
       return cb(e);
     }
     cb(err, r);
+    cb = null;
+    file = null;
   });
 };
 
@@ -119,21 +121,29 @@ Reader.prototype.reload = function(file, cb){
   if(!file){
     setImmediate(function(){
       cb(new Error('No file to load'));
+      cb = null;
     });
     return;
   }
 
   if(typeof file === 'string'){
-    fs.readFile(file, function(err, buf){
+    fs.readFile(file, function (err, buf){
       if(err){
-        return cb(err);
+        cb(err);
+        cb = null;
+        return;
       }
       try{
         self.reload(buf);
       }catch(e){
-        return cb(e);
+        cb(e);
+        cb = null;
+        self = null;
+        return;
       }
       cb(null);
+      cb = null;
+      self = null;
     });
     return;
   }
