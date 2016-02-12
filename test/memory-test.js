@@ -1,8 +1,8 @@
-/*eslint-env mocha */
+/* eslint-env mocha */
 
 /* global gc */
 
-if(typeof gc === 'undefined'){
+if (typeof gc === 'undefined') {
   throw new Error('Memory test should be run with --expose-gc');
 }
 
@@ -31,13 +31,13 @@ console.log('\nTesting cleanup...');
 
 var i, j, mem;
 
-for(j = 0; j < 10; j += 1){
+for (j = 0; j < 10; j += 1) {
 
   readers = [];
 
   gc();
 
-  for(i = 0; i < num; i++){
+  for (i = 0; i < num; i++) {
     readers.push(new Reader(file));
   }
 
@@ -65,14 +65,14 @@ gc();
 // TEST RELOAD
 console.log('\nTesting reloading...');
 
-for(i = 0; i < num; i++){
+for (i = 0; i < num; i++) {
   readers.push(new Reader(file));
 }
 
 
-for(j = 0; j < 10; j += 1){
+for (j = 0; j < 10; j += 1) {
 
-  readers.forEach(function(r){
+  readers.forEach(function(r) {
     r.reloadSync(file);
     assert.strictEqual(r.lookup('1.128.0.0').isp, 'Telstra Internet');
   });

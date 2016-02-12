@@ -1,13 +1,13 @@
-/*eslint-env mocha */
+/* eslint-env mocha */
 
 var assert = require('assert');
 
 var Reader = require('../');
 
-describe('Anonymous IP', function(){
+describe('Anonymous IP', function() {
   var reader = new Reader('test/data/GeoIP2-Anonymous-IP-Test.mmdb');
 
-  it('works', function(){
+  it('works', function() {
 
     var result = reader.lookup('1.2.0.1');
 
@@ -22,10 +22,10 @@ describe('Anonymous IP', function(){
   });
 });
 
-describe('Connection Type', function(){
+describe('Connection Type', function() {
   var reader = new Reader('test/data/GeoIP2-Connection-Type-Test.mmdb');
 
-  it('works', function(){
+  it('works', function() {
     var result = reader.lookup('1.0.1.0');
 
     assert(result);
@@ -34,10 +34,10 @@ describe('Connection Type', function(){
   });
 });
 
-describe('Domain', function(){
+describe('Domain', function() {
   var reader = new Reader('test/data/GeoIP2-Domain-Test.mmdb');
 
-  it('works', function(){
+  it('works', function() {
     var result = reader.lookup('1.2.0.0');
 
     assert(result);
@@ -46,10 +46,10 @@ describe('Domain', function(){
   });
 });
 
-describe('ISP', function(){
+describe('ISP', function() {
   var reader = new Reader('test/data/GeoIP2-ISP-Test.mmdb');
 
-  it('works', function(){
+  it('works', function() {
     var result = reader.lookup('1.128.0.0');
 
     assert(result);
@@ -63,10 +63,10 @@ describe('ISP', function(){
 
 // TODO metadata database_type
 
-describe('Country', function(){
+describe('Country', function() {
   var reader = new Reader('test/data/GeoIP2-Country-Test.mmdb');
 
-  it('works', function(){
+  it('works', function() {
     var result = reader.lookup('81.2.69.160');
 
     assert(result);
@@ -75,10 +75,10 @@ describe('Country', function(){
   });
 });
 
-describe('City', function(){
+describe('City', function() {
   var reader = new Reader('test/data/GeoIP2-City-Test.mmdb');
 
-  it('works', function(){
+  it('works', function() {
     var result = reader.lookup('81.2.69.160');
 
     assert(result);

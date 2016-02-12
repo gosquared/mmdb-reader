@@ -4,7 +4,7 @@
   "description": "Read IP data from MaxMind DB files",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test/geoip-test.js test/reader-test.js test/api-test.js test/lru-test.js && node --expose-gc test/memory-test.js"
+    "test": "eslint . && mocha test/geoip-test.js test/reader-test.js test/api-test.js test/lru-test.js && node --expose-gc test/memory-test.js"
   },
   "repository": {
     "type": "git",
@@ -23,8 +23,8 @@
   },
   "homepage": "https://github.com/gosquared/mmdb-reader",
   "devDependencies": {
-    "mocha": "^2.2.5",
-    "eslint": "^0.24.0"
+    "eslint": "^1.10.3",
+    "mocha": "^2.2.5"
   },
   "dependencies": {
     "big-integer": "^1.5.4"

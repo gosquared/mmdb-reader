@@ -1,11 +1,11 @@
-/*eslint-env mocha */
+/* eslint-env mocha */
 
 var assert = require('assert');
 
 var Reader = require('../');
 
-function checkMetadata(reader, ipVersion, recordSize){
-  it('has all the correct metadata', function(){
+function checkMetadata(reader, ipVersion, recordSize) {
+  it('has all the correct metadata', function() {
     var md = reader.metadata;
 
     assert.strictEqual(md.binary_format_major_version, 2);
@@ -21,12 +21,12 @@ function checkMetadata(reader, ipVersion, recordSize){
 }
 
 
-function checkIPv4(reader){
-  [ 1, 2, 4, 8, 16, 32 ].forEach(function(n){
+function checkIPv4(reader) {
+  [ 1, 2, 4, 8, 16, 32 ].forEach(function(n) {
     var addr = '1.1.1.' + n;
-    it('finds expected record for ' + addr, function(){
+    it('finds expected record for ' + addr, function() {
       var valueAddress = addr;
-      if(reader.metadata.ip_version === 6){
+      if (reader.metadata.ip_version === 6) {
         valueAddress = '::' + valueAddress;
       }
       assert.deepEqual(reader.lookup(addr), { ip: valueAddress });
@@ -43,30 +43,30 @@ function checkIPv4(reader){
     '1.1.1.31': '1.1.1.16'
   };
 
-  Object.keys(pairs).forEach(function(keyAddress){
+  Object.keys(pairs).forEach(function(keyAddress) {
     var valueAddress = pairs[keyAddress];
 
-    if(reader.metadata.ip_version === 6){
+    if (reader.metadata.ip_version === 6) {
       valueAddress = '::' + valueAddress;
     }
 
-    it('finds expected record for ' + keyAddress, function(){
+    it('finds expected record for ' + keyAddress, function() {
       assert.deepEqual(reader.lookup(keyAddress), { ip: valueAddress });
     });
   });
 
-  [ '1.1.1.33', '255.254.253.123' ].forEach(function(addr){
-    it('expects null for ' + addr, function(){
+  [ '1.1.1.33', '255.254.253.123' ].forEach(function(addr) {
+    it('expects null for ' + addr, function() {
       assert.equal(reader.lookup(addr), null);
     });
   });
 }
 
-function checkIPv6(reader){
-  var subnets = ['::1:ffff:ffff', '::2:0:0', '::2:0:40', '::2:0:50', '::2:0:58'];
+function checkIPv6(reader) {
+  var subnets = [ '::1:ffff:ffff', '::2:0:0', '::2:0:40', '::2:0:50', '::2:0:58' ];
 
-  subnets.forEach(function(addr){
-    it('finds expected record for ' + addr, function(){
+  subnets.forEach(function(addr) {
+    it('finds expected record for ' + addr, function() {
       assert.deepEqual(reader.lookup(addr), { ip: addr });
     });
   });
@@ -85,29 +85,29 @@ function checkIPv6(reader){
     '0:0:0:0:0:2:0:59': '::2:0:58'
   };
 
-  Object.keys(pairs).forEach(function(keyAddress){
+  Object.keys(pairs).forEach(function(keyAddress) {
     var valueAddress = pairs[keyAddress];
 
-    it('finds expected record for ' + keyAddress, function(){
+    it('finds expected record for ' + keyAddress, function() {
       assert.deepEqual(reader.lookup(keyAddress), { ip: valueAddress });
     });
   });
   //
-  [ '1.1.1.33', '255.254.253.123', '89fa::' ].forEach(function(addr){
-    it('expects null for ' + addr, function(){
+  [ '1.1.1.33', '255.254.253.123', '89fa::' ].forEach(function(addr) {
+    it('expects null for ' + addr, function() {
       assert.equal(reader.lookup(addr), null);
     });
   });
 }
 
 
-[24, 28, 32].forEach(function(recordSize){
+[ 24, 28, 32 ].forEach(function(recordSize) {
 
-  describe(recordSize + '-bit record size', function(){
+  describe(recordSize + '-bit record size', function() {
 
-    [4, 6, 'mixed'].forEach(function(ipVersion){
+    [ 4, 6, 'mixed' ].forEach(function(ipVersion) {
 
-      describe('IP version: ' + ipVersion, function(){
+      describe('IP version: ' + ipVersion, function() {
 
         var f = ipVersion === 'mixed' ? 'mixed' : 'ipv' + ipVersion;
 
@@ -116,11 +116,11 @@ function checkIPv6(reader){
 
         checkMetadata(reader, ipVersion, recordSize);
 
-        if(ipVersion !== 6){
+        if (ipVersion !== 6) {
           checkIPv4(reader);
         }
 
-        if(ipVersion !== 4){
+        if (ipVersion !== 4) {
           checkIPv6(reader);
         }
 
@@ -130,43 +130,43 @@ function checkIPv6(reader){
   });
 });
 
-describe('Without IPv4 Search Tree', function(){
+describe('Without IPv4 Search Tree', function() {
   var reader = new Reader('test/data/MaxMind-DB-no-ipv4-search-tree.mmdb');
 
-  it('finds expected record for 1.1.1.1', function(){
+  it('finds expected record for 1.1.1.1', function() {
     assert.strictEqual(reader.lookup('1.1.1.1'), '::0/64');
   });
 
-  it('finds expected record for 192.1.1.1', function(){
+  it('finds expected record for 192.1.1.1', function() {
     assert.strictEqual(reader.lookup('192.1.1.1'), '::0/64');
   });
 
 });
 
-describe('Bad data', function(){
+describe('Bad data', function() {
 
-  describe('Bad pointers', function(){
+  describe('Bad pointers', function() {
     var reader = new Reader('test/data/MaxMind-DB-test-broken-pointers-24.mmdb');
 
-    it('throws with bad search tree', function(){
-      assert.throws(function(){
+    it('throws with bad search tree', function() {
+      assert.throws(function() {
         reader.lookup('1.1.1.32');
       });
     });
 
-    it('throws with bad data section', function(){
-      assert.throws(function(){
+    it('throws with bad data section', function() {
+      assert.throws(function() {
         reader.lookup('1.1.1.16');
       });
     });
 
   });
 
-  describe('Broken doubles', function(){
+  describe('Broken doubles', function() {
     var reader = new Reader('test/data/GeoIP2-City-Test-Broken-Double-Format.mmdb');
 
-    it('throws with bad double data', function(){
-      assert.throws(function(){
+    it('throws with bad double data', function() {
+      assert.throws(function() {
         reader.lookup('2001:220::');
       });
     });
@@ -174,126 +174,126 @@ describe('Bad data', function(){
 
 });
 
-describe('Decoder', function(){
+describe('Decoder', function() {
   var reader = new Reader('test/data/MaxMind-DB-test-decoder.mmdb');
 
-  describe('Types', function(){
+  describe('Types', function() {
     var record = reader.lookup('1.1.1.0');
 
-    it('decodes properly', function(){
+    it('decodes properly', function() {
       assert(record);
     });
 
-    it('decodes booleans', function(){
+    it('decodes booleans', function() {
       assert.strictEqual(record.boolean, true);
     });
 
-    it('decodes bytes', function(){
+    it('decodes bytes', function() {
       assert(record.bytes instanceof Buffer);
       assert.strictEqual(record.bytes.toString('hex'), '0000002a');
     });
 
-    it('decodes utf8 strings', function(){
+    it('decodes utf8 strings', function() {
       assert.strictEqual(record.utf8_string, 'unicode! ☯ - ♫');
     });
 
-    it('decodes arrays', function(){
-      assert.deepEqual(record.array, [1, 2, 3]);
+    it('decodes arrays', function() {
+      assert.deepEqual(record.array, [ 1, 2, 3 ]);
     });
 
-    it('decodes maps', function(){
+    it('decodes maps', function() {
       assert.deepEqual(record.map, {
         mapX: {
-          arrayX: [7, 8, 9],
+          arrayX: [ 7, 8, 9 ],
           utf8_stringX: 'hello' // eslint-disable-line camelcase
         }
       });
     });
 
-    it('decodes doubles', function(){
+    it('decodes doubles', function() {
       assert.strictEqual(record.double, 42.123456);
     });
 
-    it('decodes floats', function(){
+    it('decodes floats', function() {
       assert(Math.abs(record.float - 1.1) < 0.000001);
     });
 
-    it('decodes signed 32-bit ints', function(){
+    it('decodes signed 32-bit ints', function() {
       assert.strictEqual(record.int32, -268435456);
     });
 
-    it('decodes unsigned 16-bit ints', function(){
+    it('decodes unsigned 16-bit ints', function() {
       assert.strictEqual(record.uint16, 100);
     });
 
-    it('decodes unsigned 32-bit ints', function(){
+    it('decodes unsigned 32-bit ints', function() {
       assert.strictEqual(record.uint32, 268435456);
     });
 
-    it('decodes unsigned 64-bit ints', function(){
+    it('decodes unsigned 64-bit ints', function() {
       assert.strictEqual(record.uint64, '1152921504606846976');
     });
 
-    it('decodes unsigned 128-bit ints', function(){
+    it('decodes unsigned 128-bit ints', function() {
       assert.strictEqual(record.uint128, '1329227995784915872903807060280344576');
     });
   });
 
 
 
-  describe('Zeroes', function(){
+  describe('Zeroes', function() {
     var record = reader.lookup('::0');
 
-    it('decodes properly', function(){
+    it('decodes properly', function() {
       assert(record);
     });
 
-    it('decodes booleans', function(){
+    it('decodes booleans', function() {
       assert.strictEqual(record.boolean, false);
     });
 
-    it('decodes bytes', function(){
+    it('decodes bytes', function() {
       assert(record.bytes instanceof Buffer);
       assert.strictEqual(record.bytes.length, 0);
     });
 
-    it('decodes utf8 strings', function(){
+    it('decodes utf8 strings', function() {
       assert.strictEqual(record.utf8_string, '');
     });
 
-    it('decodes arrays', function(){
+    it('decodes arrays', function() {
       assert.deepEqual(record.array, []);
     });
 
-    it('decodes maps', function(){
+    it('decodes maps', function() {
       assert.deepEqual(record.map, {});
     });
 
-    it('decodes doubles', function(){
+    it('decodes doubles', function() {
       assert.strictEqual(record.double, 0);
     });
 
-    it('decodes floats', function(){
+    it('decodes floats', function() {
       assert(Math.abs(record.float) < 0.000001);
     });
 
-    it('decodes signed 32-bit ints', function(){
+    it('decodes signed 32-bit ints', function() {
       assert.strictEqual(record.int32, 0);
     });
 
-    it('decodes unsigned 16-bit ints', function(){
+    it('decodes unsigned 16-bit ints', function() {
       assert.strictEqual(record.uint16, 0);
     });
 
-    it('decodes unsigned 32-bit ints', function(){
+    it('decodes unsigned 32-bit ints', function() {
       assert.strictEqual(record.uint32, 0);
     });
 
-    it('decodes unsigned 64-bit ints', function(){
+    it('decodes unsigned 64-bit ints', function() {
       assert.strictEqual(record.uint64, '0');
     });
 
-    it('decodes unsigned 128-bit ints', function(){
+    it('decodes unsigned 128-bit ints', function() {
       assert.strictEqual(record.uint128, '0');
     });
   });
