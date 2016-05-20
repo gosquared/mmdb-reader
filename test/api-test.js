@@ -75,12 +75,13 @@ describe('Bad DBs', function() {
   it('throws up when loading a nonexistent file (sync)', function() {
     assert.throws(function() {
       Reader('does/not/exist'); // eslint-disable-line new-cap
-    });
+    }, /ENOENT/);
   });
 
   it('throws up when loading a nonexistent file (async)', function(done) {
     Reader.open('does/not/exist', function(err) {
       assert(err);
+      assert(/ENOENT/.test(err.message));
       done();
     });
   });
@@ -88,12 +89,13 @@ describe('Bad DBs', function() {
   it('doesn\'t get confused by a bad db file', function() {
     assert.throws(function() {
       Reader('test/data/empty.mmdb'); // eslint-disable-line new-cap
-    });
+    }, /Bad DB/);
   });
 
   it('doesn\'t get confused by a bad db file (async)', function(done) {
     Reader.open('test/data/empty.mmdb', function(err) {
       assert(err);
+      assert(/Bad DB/.test(err.message));
       done();
     });
   });
@@ -105,7 +107,7 @@ describe('Bad DBs', function() {
 
     assert.throws(function() {
       reader.reloadSync('test/data/empty.mmdb');
-    });
+    }, /Bad DB/);
   });
 
   it('throws up when reloading a bad file (async)', function(done) {
@@ -115,6 +117,7 @@ describe('Bad DBs', function() {
 
     reader.reload('test/data/empty.mmdb', function(err) {
       assert(err);
+      assert(/Bad DB/.test(err.message));
       done();
     });
   });

@@ -238,7 +238,7 @@ Reader.prototype.findMetaPosition = function() {
     }
 
     // If we reached the beginning of the file, something went wrong
-    if (metaPosition === -1) {
+    if (metaPosition === 0) {
       throw new Error('Bad DB');
     }
   }
