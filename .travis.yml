@@ -1,19 +1,12 @@
 language: node_js
 node_js:
   - stable
+  - '6'
   - '5'
   - '4'
   - '0.12'
   - '0.10'
 
-deploy:
-  provider: npm
-  email: jt@gosquared.com
-  api_key:
-    secure: OEZALcDee2bYXdL/XfbbQV4Kz18M+oqqQGEUyEonb20rDNZab9HAXjiCfF2TCkmAck9h2b9lJm1ahogWqlgRuNq0qKJ41MxSsK8sp31pVlw65xFa3ol0rbS0vxA7BxldFwEVUyqP5lNBRsfCxgf7jJjvD2RSHYTFxqFSElF0HavzpipUZPS1yZ3Z5nPEFsSc3AFhp8rohOYy+X0LiIaRi8+wBNUbObIA9DWmilk9ZgnQQxonRxIjV2kRPvkiiloicOpviLFZNIpWA0FOIda3XWK9yHUrXegAG4h3J70qUkY6X68NxvJGagrZf6DfreqK53lTkuyNab8TIINTLEy2y6cXCPTJ/XEmuyr7iSoNqx5rqzUHvZZy8ck9v0lU5YXeZzsRwpmLA4aBGk0GG+3odE6NBqIVN5bZ7zeEKGSYAsGELOFV5FPU1PurDdOCi/Go7K8u1XWn/6sgFsHkt2Z75Vne1nIiOAdG4YXeyUw2uALI03gDhBYV+64bsibmVB3SPpBO4Doef9v8pLfgJ9hX42WAOkzT3zkmqtm4B+rdpBA0ipDKrPrKp3JDcQE3MqIPGVCYQt2IsNxOxOjSJVXeaWd66AW0ngxg8lASvl2fxeQ/tKBKNamplw6/96D0AqPM6Kbnfi8fEuGKqrvuIuL5gIP3lrINFXarmq/demyNrE8=
-  on:
-    tags: true
-    branch: master
 notifications:
   slack:
     secure: EYYu/Yq77M0chS5m4BVUn7w4ZjovE1pACGXtHkkXMUzFlxD0OjwNMeF+b1CPKgMgVFYA4yCTMthF3dcEytGFedEM79ZdxqP84sfI8oodRkSsiafx/WIdbpjivqfADKeM4DYkVxq2bv+5Jw4TXNGozxYFL2gtsa4AcJ+NkqhMtmB0DFMN8mgccaaYBKH8TsihtwOlgpetD7Jfi/SwShNnhYvYXvW9xL96auX/jsiE7247yjQrdkgDBK6wj6QeLJLou+NE/aaolYzQ/j9FAfjx6F3StD6cLRHWzP4OxtFKgMl6gv4dNB77I2fEzD9RlrHPLnHqfj2qC4IGjeBsE4qbhXpvUYPMtJV9RLNZce2NaTmb3T1oUsVvsjv/6ThL137CnlxgdAPi07ABK/YRcdIvoN1PuTjBvtqhY19+q2bfq/+zLA5LVK4jFRmfPxwGXAODB3huaNfH/J4s+oDaiEMBzC9KDnuOS99P7tqDHyiBbTgz0/2eEzk+05kBSpmcIUTNXUumHqjh/7C0tZ4Bz9RC1lwgERUBcEpxi0SQbmJQ17uwm62wXuAVsmxm8E/AfF/s6s1z6yBGyE6krntqonFwqPJlnkjAt9te8kosEVOg372OhMAapkOy5Uy4RlgJ2W+uNPRqpG28H8PmgiW4HZ3TcUZe3Htn/sgOrBMnfJKadmI=

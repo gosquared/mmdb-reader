@@ -217,17 +217,32 @@ Reader.prototype.findMetaPosition = function() {
   var buf = this._buf;
   var metaPosition;
 
-  // Start at the end, read backwards until we find the section
-  for (metaPosition = buf.length; metaPosition; metaPosition--) {
-    if (buf.toString('hex', metaPosition - metaMarker.length / 2, metaPosition) === metaMarker) {
-      break;
+  // Use lastIndexOf if supported (node v6)
+  // Can't just check for presence of lastIndexOf because it's present (but different)
+  // on previous node versions (comes from UInt8Array)
+  if (Buffer.prototype.hasOwnProperty('lastIndexOf')) {
+    metaPosition = buf.lastIndexOf(new Buffer(metaMarker, 'hex'));
+
+    if (metaPosition === -1) {
+      throw new Error('Bad DB');
+    }
+
+    metaPosition += metaMarker.length / 2;
+
+  } else {
+    // Start at the end, read backwards until we find the section
+    for (metaPosition = buf.length; metaPosition; metaPosition--) {
+      if (buf.toString('hex', metaPosition - metaMarker.length / 2, metaPosition) === metaMarker) {
+        break;
+      }
+    }
+
+    // If we reached the beginning of the file, something went wrong
+    if (metaPosition === -1) {
+      throw new Error('Bad DB');
     }
   }
 
-  // If we reached the beginning of the file, something went wrong
-  if (metaPosition === 0) {
-    throw new Error('Bad DB');
-  }
 
   return metaPosition;
 };
