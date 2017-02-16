@@ -88,7 +88,7 @@ for (j = 0; j < 10; j += 1) {
   assert(mem.rss - start.rss > num * fileSize * 0.75);
 
   // Dispose + gc + reload shouldn't increase the mem too much
-  assert(mem.rss - start.rss < num * fileSize * 1.75);
+  assert(mem.rss - start.rss < num * fileSize * 1.5);
 }
 
 console.log('Good!');

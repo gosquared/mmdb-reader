@@ -2,8 +2,9 @@ var fs = require('fs');
 var bigInteger = require('big-integer');
 
 var IpDecoder = require('./IpDecoder');
-var LRU = require('./LRUCache');
 
+var LRU = require('hashlru');
+var LRU_SIZE = 5000;
 
 // Few helper functions for combining bytes into numbers.
 // V8 will inline these so perf is same as if we wrote them out in full
@@ -36,7 +37,7 @@ function Reader(buf, filePath) {
 
   // LRU cache that'll hold objects we read from the data section.
   // 5000 seems to be roughly the sweet spot between mem vs hit-rate
-  this._pointerCache = new LRU(5000);
+  this._pointerCache = new LRU(LRU_SIZE);
 
   this._buf = buf;
 
@@ -157,7 +158,7 @@ Reader.prototype.reload = function(file, cb) {
 
   // Reset our data, load the new buffer
   this._buf = file;
-  this._pointerCache.reset();
+  this._pointerCache = new LRU(LRU_SIZE);
   this.setup();
 };
 
@@ -247,114 +248,101 @@ Reader.prototype.findMetaPosition = function() {
   return metaPosition;
 };
 
-
+// Class for returned records. Better than using { value, ptr } for perf
+function Record(a, b) {
+  this.value = a;
+  this.ptr = b;
+}
 
 // Data-reading functions for pulling various objects out of the data section
-
 
 // Read whatever is stored at `ptr`
 // Return value is `{ value: theThing, ptr: position of next item }`
 Reader.prototype.readData = function(ptr) {
 
   // control tells us what type of thing we're reading and how big it is
-  var control = this.readDataType(ptr);
-  ptr = control.ptr;
-
-  switch (control.type) {
-  case 1: // pointer
-    return this.readPointer(control);
-  case 2: // string
-    return this.readString(control);
-  case 3: // double
-    return this.readDouble(control);
-  case 4: // bytes
-    return this.readBytes(control);
-  case 5: // uint16
-    return this.readUInt16(control);
-  case 6: // uint32
-    return this.readUInt32(control);
-  case 7: // map
-    return this.readMap(control);
-  case 8: // int32
-    return this.readInt32(control);
-  case 9: // uint64
-    return this.readUInt64(control);
-  case 10: // uint128
-    return this.readUInt128(control);
-  case 11: // array
-    return this.readArray(control);
-  case 14: // bool
-    return this.readBoolean(control);
-  case 15: // float
-    return this.readFloat(control);
-
-  // Throw if we don't recognise the data type
-  default:
-    throw new Error('Unknown type identifier: ' + control.type);
-  }
-};
-
-// Same as .readData() but reads through the LRU cache for performance
-Reader.prototype.cachedRead = function(ptr) {
-  var cached = this._pointerCache.get(ptr);
-  if (cached) {
-    return cached;
-  }
-  var d = this.readData(ptr);
-  this._pointerCache.set(ptr, d);
-  return d;
-};
-
-// Reads the control byte and grbs object type and size
-Reader.prototype.readDataType = function(ptr) {
   var cbyte = this._read(ptr++);
 
   // First three bits indicate the object type
   var type = cbyte >> 5;
+  // Trailing five bits are the size data
+  var sizeMarker = cbyte & 0x1f; // 00011111
+
+  // Handle pointers (very common) as early as possible
+  if (type === 1) {
+    return this.readPointer(ptr, sizeMarker);
+  }
 
   // If they're 0, this is an extended type, stored in the next byte
   if (type === 0) {
     type = this._read(ptr++) + 7;
   }
 
-  // Trailing five bits are the size data
-  var sizeMarker = cbyte & 0x1f; // 00011111
 
-  // Pointers behave slightly differently from the others
-  // so we won't do the extended size reading
-  if (type === 1) {
-    return { type: type, size: sizeMarker, ptr: ptr };
-  }
+  var size = 0;
 
-  // size < 29 -> actual size
   if (sizeMarker < 29) {
-    return { type: type, size: sizeMarker, ptr: ptr };
+    // size < 29 -> actual size
+    size = sizeMarker;
+  } else if (sizeMarker === 29) {
+    // size = 29 -> size is 29 + one byte
+    size = 29 + this._read(ptr++);
+  } else if (sizeMarker === 30) {
+    // size = 30 -> size is 285 + next two bytes
+    size = 285 + concat2(this._read(ptr++), this._read(ptr++));
+  } else {
+    // size = 31 -> size is 65821 + next three bytes
+    size = 65821 + concat3(this._read(ptr++), this._read(ptr++), this._read(ptr++));
   }
 
-  // size = 29 -> size is 29 + one byte
-  if (sizeMarker === 29) {
-    return { type: type, size: 29 + this._read(ptr++), ptr: ptr };
-  }
 
-  // size = 30 -> size is 285 + next two bytes
-  if (sizeMarker === 30) {
-    return { type: type, size: 285 + concat2(this._read(ptr++), this._read(ptr++)), ptr: ptr };
-  }
+  // Arranged in rough frequency order for performance
+  switch (type) {
+  case 2: // string
+    return this.readString(ptr, size);
+  case 7: // map
+    return this.readMap(ptr, size);
+  case 3: // double
+    return this.readDouble(ptr);
+  case 6: // uint32
+    return this.readUInt32(ptr, size);
+  case 11: // array
+    return this.readArray(ptr, size);
+  case 14: // bool
+    return this.readBoolean(ptr, size);
+  case 5: // uint16
+    return this.readUInt16(ptr, size);
+  case 9: // uint64
+    return this.readUInt64(ptr, size);
+  case 4: // bytes
+    return this.readBytes(ptr, size);
+  case 8: // int32
+    return this.readInt32(ptr, size);
+  case 10: // uint128
+    return this.readUInt128(ptr, size);
+  case 15: // float
+    return this.readFloat(ptr);
 
-  // size = 31 -> size is 65821 + next three bytes
-  if (sizeMarker === 31) {
-    return { type: type, size: 65821 + concat3(this._read(ptr++), this._read(ptr++), this._read(ptr++)), ptr: ptr };
+  // Throw if we don't recognise the data type
+  default:
+    throw new Error('Unknown type identifier: ' + type);
   }
+};
 
-  // Size shouldn't be > 31 because of & 0x1f;
+// Same as .readData() but reads through the LRU cache for performance, and only returns the value
+Reader.prototype.cachedRead = function(ptr) {
+  var cached = this._pointerCache.get(ptr);
+  if (cached) {
+    return cached;
+  }
+  var d = this.readData(ptr).value;
+  this._pointerCache.set(ptr, d);
+  return d;
 };
 
 
 // Reads a pointer to data elsewhere. Resolves the data and reads that
-Reader.prototype.readPointer = function(control) {
-  var size = control.size;
-  var ptr = control.ptr;
-
+Reader.prototype.readPointer = function(ptr, size) {
   // First two bits of size tell us how big the size actually is
   var ptrSize = size >> 3;
 
@@ -383,64 +371,52 @@ Reader.prototype.readPointer = function(control) {
   var d = this.cachedRead(addr + this.dataStart);
 
   // Return data read along with position after this pointer
-  return { value: d.value, ptr: ptr };
+  return new Record(d, ptr);
 };
 
 // Reads a utf-8 string
-Reader.prototype.readString = function(control) {
-  var length = control.size;
-  var ptr = control.ptr;
+Reader.prototype.readString = function(ptr, size) {
+  var str = this._readUTF8(ptr, size);
+  ptr += size;
 
-  var str = this._readUTF8(ptr, length);
-  ptr += length;
-
-  return { value: str, ptr: ptr };
+  return new Record(str, ptr);
 };
 
 // Reads a 32-bit big-endian double
-Reader.prototype.readDouble = function(control) {
-  var ptr = control.ptr;
+Reader.prototype.readDouble = function(ptr) {
   var val = this._readDouble(ptr);
 
   // Size will always be 8, regardless of what control bit says
   ptr += 8;
 
-  return { value: val, ptr: ptr };
+  return new Record(val, ptr);
 };
 
 // Read arbitrary bytes as a buffer
-Reader.prototype.readBytes = function(control) {
-  var ptr = control.ptr;
-  var length = control.size;
+Reader.prototype.readBytes = function(ptr, size) {
+  var val = this._readBuffer(ptr, size);
+  ptr += size;
 
-  var val = this._readBuffer(ptr, length);
-  ptr += length;
-
-  return { value: val, ptr: ptr };
+  return new Record(val, ptr);
 };
 
 // Read unsigned 16-bit int
-Reader.prototype.readUInt16 = function(control) {
-  var size = control.size;
-  var ptr = control.ptr;
-
+Reader.prototype.readUInt16 = function(ptr, size) {
   // Size = 0 -> value is 0, no bytes stored
   if (size === 0) {
-    return { value: 0, ptr: ptr };
+    return new Record(0, ptr);
   }
   if (size === 1) {
-    return { value: this._read(ptr++), ptr: ptr };
+    return new Record(this._read(ptr++), ptr);
   }
 
   var val = concat2(this._read(ptr++), this._read(ptr++));
 
-  return { value: val, ptr: ptr };
+  return new Record(val, ptr);
 };
 
 // Read unsigned 32-bit int
-Reader.prototype.readUInt32 = function(control) {
-  var size = control.size;
-  var ptr = control.ptr;
+Reader.prototype.readUInt32 = function(ptr, size) {
   var val = 0;
 
   // If isze is 4 then use _read32 helper to make sure it's read unsigned
@@ -455,41 +431,34 @@ Reader.prototype.readUInt32 = function(control) {
 
   ptr += size;
 
-  return { value: val, ptr: ptr };
+  return new Record(val, ptr);
 };
 
 // Read key-value map
-Reader.prototype.readMap = function(control) {
+Reader.prototype.readMap = function(ptr, mapLength) {
   // Size tells us how many keys to expect, not byte size
-  var mapLength = control.size;
-
-  var ptr = control.ptr;
 
   // Object in which we'll store the key-val pairs
-  var obj = {};
+  var obj = Object.create(null);
 
   for (var i = 0; i < mapLength; i++) {
     // Read key. Should always be a utf-8 string or a pointer to one
     var k = this.readData(ptr);
-    var key = k.value;
     ptr = k.ptr;
 
     // Value can be whatever it likes
     var v = this.readData(ptr);
-    var value = v.value;
     ptr = v.ptr;
 
     // Store key -> value
-    obj[key] = value;
+    obj[k.value] = v.value;
   }
 
-  return { value: obj, ptr: ptr };
+  return new Record(obj, ptr);
 };
 
 // Read signed 32-bit int
-Reader.prototype.readInt32 = function(control) {
-  var size = control.size;
-  var ptr = control.ptr;
+Reader.prototype.readInt32 = function(ptr, size) {
   var val = 0;
 
   // JavaScript's ints are 32-bit signed so no need to worry about
@@ -500,14 +469,11 @@ Reader.prototype.readInt32 = function(control) {
 
   ptr += size;
 
-  return { value: val, ptr: ptr };
+  return new Record(val, ptr);
 };
 
 // Read a 64-bit int. Uses big-integer and returns a string value
-Reader.prototype.readUInt64 = function(control) {
-  var size = control.size;
-  var ptr = control.ptr;
-
+Reader.prototype.readUInt64 = function(ptr, size) {
   var num = bigInteger(0);
 
   for (var i = 0; i < size; i++) {
@@ -516,14 +482,11 @@ Reader.prototype.readUInt64 = function(control) {
 
   ptr += size;
 
-  return { value: num.toString(), ptr: ptr };
+  return new Record(num.toString(), ptr);
 };
 
 // Read a 128-bit int. Exactly the same as uint64
-Reader.prototype.readUInt128 = function(control) {
-  var size = control.size;
-  var ptr = control.ptr;
-
+Reader.prototype.readUInt128 = function(ptr, size) {
   var num = bigInteger(0);
 
   for (var i = 0; i < size; i++) {
@@ -532,15 +495,12 @@ Reader.prototype.readUInt128 = function(control) {
 
   ptr += size;
 
-  return { value: num.toString(), ptr: ptr };
+  return new Record(num.toString(), ptr);
 };
 
 // Read an array of objects
-Reader.prototype.readArray = function(control) {
-
+Reader.prototype.readArray = function(ptr, size) {
   // As with map, size tells us the number of items, not byte length
-  var size = control.size;
-  var ptr = control.ptr;
 
   // Return value
   var out = [];
@@ -552,25 +512,23 @@ Reader.prototype.readArray = function(control) {
     ptr = v.ptr;
   }
 
-  return { value: out, ptr: ptr };
+  return new Record(out, ptr);
 };
 
 // Reads a boolean
-Reader.prototype.readBoolean = function(control) {
+Reader.prototype.readBoolean = function(ptr, size) {
   // Value is stored in size data, either 1 or 0.
-  return { value: control.size > 0, ptr: control.ptr };
+  return new Record(size > 0, ptr);
 };
 
 // Reads a 32-bit float value
-Reader.prototype.readFloat = function(control) {
-  var ptr = control.ptr;
-
+Reader.prototype.readFloat = function(ptr) {
   var val = this._readFloat(ptr);
 
   // Size is always 4 bytes regardless of what control bit says
   ptr += 4;
 
-  return { value: val, ptr: ptr };
+  return new Record(val, ptr);
 };
 
 
@@ -599,29 +557,27 @@ Reader.prototype.setRecordSize = function(size) {
 
 // 24-bit records are timple three consecutive bytes
 Reader.prototype.readLeft24 = function(idx) {
-  return concat3(this._read(idx++), this._read(idx++), this._read(idx++));
+  return concat3(this._read(idx), this._read(idx + 1), this._read(idx + 2));
 };
 Reader.prototype.readRight24 = function(idx) {
-  idx += 3;
-  return concat3(this._read(idx++), this._read(idx++), this._read(idx++));
+  return concat3(this._read(idx + 3), this._read(idx + 4), this._read(idx + 5));
 };
 
 // 28-bit records store the mist significant 4 bits of each record in the middle byte of each node
 Reader.prototype.readLeft28 = function(idx) {
   return concat4(
     this._read(idx + 3) >> 4,
-    this._read(idx++),
-    this._read(idx++),
-    this._read(idx++)
+    this._read(idx),
+    this._read(idx + 1),
+    this._read(idx + 2)
   );
 };
 Reader.prototype.readRight28 = function(idx) {
-  idx += 3;
   return concat4(
-    this._read(idx++) & 0x0f,
-    this._read(idx++),
-    this._read(idx++),
-    this._read(idx++)
+    this._read(idx + 3) & 0x0f,
+    this._read(idx + 4),
+    this._read(idx + 5),
+    this._read(idx + 6)
   );
 };
 
@@ -651,7 +607,7 @@ Reader.prototype.findIPv4StartPointer = function() {
       }
       if (record > this.numNodes) {
         this.ipv4StartPointer = -1;
-        this.ipv4Data = this.cachedRead((record - this.numNodes) + this.dataStart - 16).value;
+        this.ipv4Data = this.cachedRead((record - this.numNodes) + this.dataStart - 16);
         return;
       }
 
@@ -663,16 +619,18 @@ Reader.prototype.findIPv4StartPointer = function() {
 
 
 // Main lookup function. Takes an IP address, returns a record or null
-Reader.prototype.lookup = function(ip) {
+Reader.prototype.lookup = function(addr) {
 
   // Our IP decoder will translate the IP string to bits
-  this.ip.set(ip);
+  this.ip.set(addr);
+
+  var ip = this.ip;
 
   var numBits = 128;
   var ptr = 0;
 
   // If we're IPv4, we've done some work already.
-  if (this.ip.ipVersion === 4) {
+  if (ip.ipVersion === 4) {
     numBits = 32;
     ptr = this.ipv4StartPointer;
     if (ptr === null) {
@@ -683,8 +641,10 @@ Reader.prototype.lookup = function(ip) {
     }
   }
 
+  var n = this.numNodes;
+
   for (var i = 0; i < numBits; i++) {
-    var bit = this.ip.bitAt(i);
+    var bit = ip.bitAt(i);
 
     var record;
 
@@ -695,18 +655,18 @@ Reader.prototype.lookup = function(ip) {
       record = this.readRight(ptr);
     }
 
-    if (record < this.numNodes) {
+    if (record < n) {
       ptr = record * this.nodeSize;
       continue;
     }
 
     // Not found
-    if (record === this.numNodes) {
+    if (record === n) {
       return null;
     }
 
     // Found! Return the data
-    return this.cachedRead((record - this.numNodes) + this.dataStart - 16).value;
+    return this.cachedRead((record - n) + this.dataStart - 16);
   }
 };
 

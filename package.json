@@ -4,7 +4,7 @@
   "description": "Read IP data from MaxMind DB files",
   "main": "index.js",
   "scripts": {
-    "test": "eslint . && mocha test/geoip-test.js test/reader-test.js test/api-test.js test/lru-test.js && node --expose-gc test/memory-test.js"
+    "test": "eslint . && mocha test/geoip-test.js test/reader-test.js test/api-test.js && node --max-old-space-size=32 --expose-gc test/memory-test.js"
   },
   "repository": {
     "type": "git",

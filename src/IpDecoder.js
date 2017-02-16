@@ -14,8 +14,8 @@ function IpDecoder() {
 // assumes you've already validated the IP and it's sane
 IpDecoder.prototype.set = function(ip) {
 
-  // Super-naive regex test for IPv4. TODO: check IPv6-mapped IPv4
-  if (/^\d+\./.test(ip)) {
+  // Super-naive test for IPv4. TODO: check IPv6-mapped IPv4
+  if (ip.charAt(3) === '.' || ip.charAt(2) === '.' || ip.charAt(1) === '.') {
     this.set4(ip);
   } else {
     this.set6(ip);
@@ -28,9 +28,11 @@ IpDecoder.prototype.set4 = function(ip) {
 
   // Store everything in the first 4 entries of this.buf
   // IPv4 is four octets, base 10
-  for (var i = 0; i < 4; i += 1) {
-    this.buf[i] = parseInt(bits[i], 10);
-  }
+  this.buf[0] = parseInt(bits[0], 10);
+  this.buf[1] = parseInt(bits[1], 10);
+  this.buf[2] = parseInt(bits[2], 10);
+  this.buf[3] = parseInt(bits[3], 10);
+
   this.ipVersion = 4;
 };
 

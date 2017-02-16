@@ -50,3 +50,14 @@ MMDBReader.open('path/to/data.mmdb', function(err, reader){
 mmdb-reader loads the entire database file into memory as a single node `Buffer`. It also uses an in-memory cache when reading complex data structures out of this buffer in the interests of performance. So very roughly speaking, you should assume this module will consume `size_of_mmdb_file * 1.25` of memory.
 
 The default behaviour is to load the database file synchronously. This assumes that CPU and I/O are less important to you when your process is starting than when it's booted and you need to look up IPs quickly. If you want to load the file asynchronously then obviously you don't have a `reader` until it's finished.
+
+Results are returned directly from the in-memory cache by reference, so if you're going to be modifying data, you should copy it first. That is, don't do this:
+
+```js
+var record = reader.lookup('1.2.3.4');
+record.something = 'foo';
+
+// elsewhere:
+var anotherRecord = reader.lookup('2.3.4.5');
+// anotherRecord.something might be 'foo'. Or it might not. Who knows?
+```
