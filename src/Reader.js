@@ -439,7 +439,7 @@ Reader.prototype.readMap = function(ptr, mapLength) {
   // Size tells us how many keys to expect, not byte size
 
   // Object in which we'll store the key-val pairs
-  var obj = Object.create(null);
+  var obj = {};
 
   for (var i = 0; i < mapLength; i++) {
     // Read key. Should always be a utf-8 string or a pointer to one
