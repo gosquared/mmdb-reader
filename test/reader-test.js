@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 var assert = require('assert');
+var sinon = require('sinon');
 
 var Reader = require('../');
 
@@ -96,6 +97,25 @@ function checkIPv6(reader) {
   [ '1.1.1.33', '255.254.253.123', '89fa::' ].forEach(function(addr) {
     it('expects null for ' + addr, function() {
       assert.equal(reader.lookup(addr), null);
+    });
+  });
+
+  describe('IPv4 as IPv6', function() {
+    var spy;
+    beforeEach(function() {
+      spy = sinon.spy(reader.ip, 'set4');
+    });
+    afterEach(function() {
+      reader.ip.set4.restore();
+    });
+    it('IPv4 "translated" addresses should be looked up in the v4 DB', function() {
+      reader.lookup('::ffff:0:10.10.10.10');
+      assert(spy.calledWith('10.10.10.10'));
+    });
+
+    it('IPv4 "mapped" addresses should be looked up in the v4 DB', function() {
+      reader.lookup('::ffff:10.10.10.10');
+      assert(spy.calledWith('10.10.10.10'));
     });
   });
 }
