@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "big-integer": "^1.5.4",
+    "hashlru": "^2.2.1",
     "sinon": "^6.0.1"
   }
 }
