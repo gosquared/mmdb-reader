@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "big-integer": "^1.5.4",
-    "hashlru": "^2.2.1",
-    "sinon": "^6.0.1"
+    "hashlru": "^2.0.0",
+    "sinon": "^4.4.6"
   }
 }
