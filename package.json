@@ -24,11 +24,11 @@
   "homepage": "https://github.com/gosquared/mmdb-reader",
   "devDependencies": {
     "eslint": "^1.10.3",
-    "mocha": "^2.2.5"
+    "mocha": "^2.2.5",
+    "sinon": "4.0.0"
   },
   "dependencies": {
     "big-integer": "^1.5.4",
-    "hashlru": "^2.0.0",
-    "sinon": "4.0.0"
+    "hashlru": "^2.0.0"
   }
 }
