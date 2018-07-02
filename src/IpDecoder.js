@@ -11,12 +11,12 @@ function IpDecoder() {
 }
 
 // @see "Special address blocks" at https://en.wikipedia.org/wiki/Reserved_IP_addresses#IPv6, "IPv4 mapped addresses." and "IPv4 translated addresses."
-IpDecoder.prototype.ipv4HybridTest = /^\:\:ffff\:(0\:){0,1}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+var ipv4HybridTest = /^\:\:ffff\:(0\:){0,1}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
 // Set an IP string and store it in the buffer. This method
 // assumes you've already validated the IP and it's sane
 IpDecoder.prototype.set = function(ip) {
-  var mappedIPv4 = ip.match(IpDecoder.prototype.ipv4HybridTest);
+  var mappedIPv4 = ip.match(ipv4HybridTest);
 
   if (mappedIPv4 && mappedIPv4.length === 6) {
     this.set4(mappedIPv4.slice(2).join('.')); // convert back to ipV4
