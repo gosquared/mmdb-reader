@@ -7,7 +7,7 @@ declare module 'mmdb-reader' {
     ptr: number
   }
 
-  export class Reader {
+  export default class Reader {
     public constructor(buf: string | Buffer, filePath?: string)
 
     public open(path: PathLike, cb: (err: Error, reader?: Reader) => void): void
